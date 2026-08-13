@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>딥블루 사천 - 여행 지도 & 일정</title>
+  <!-- Google Fonts 적용 (Noto Sans KR) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* 기본 글로벌 스타일 */
+    :root {
+      --primary-blue: #0f2b48;    /* 딥블루 메인 컬러 */
+      --secondary-blue: #1e4976;  /* 서브 포인트 컬러 */
+      --accent-blue: #3b82f6;     /* 강조 버튼/링크 */
+      --bg-light: #f4f7fa;        /* 배경색 */
+      --card-bg: #ffffff;         /* 카드 배경 */
+      --text-main: #1f2937;       /* 메인 텍스트 */
+      --text-sub: #4b5563;        /* 서브 텍스트 */
+      --border-color: #e5e7eb;   /* 테두리 색상 */
+    }
+
+    /* 부드러운 스크롤 이동 */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    /* 헤더 영역 */
+    header {
+      background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+      color: #ffffff;
+      text-align: center;
+      padding: 40px 20px 30px 20px;
+      box-shadow: 0 4px 12px rgba(15, 43, 72, 0.15);
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: #cbd5e1;
+      font-weight: 300;
+    }
+
+    /* 상단 고정/빠른 이동 네비게이션 메뉴 */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      padding: 12px 10px;
+    }
+
+    .nav-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #f1f5f9;
+      color: var(--primary-blue);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background-color: var(--secondary-blue);
+      color: #ffffff;
+      border-color: var(--secondary-blue);
+    }
+
+    /* 메인 레이아웃 컨테이너 */
+    main {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    /* 섹션 공통 카드 스타일 */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--border-color);
+      scroll-margin-top: 70px; /* 고정 메뉴바 높이 고려한 이동 위치 여백 */
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--primary-blue);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-desc {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+    }
+
+    /* 지도 반응형 컨테이너 */
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: 520px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* 버튼 스타일 */
+    .btn-group {
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: var(--secondary-blue);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-blue);
+    }
+
+    /* 먹거리 태그 그리드 스타일 */
+    .food-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .food-card {
+      background-color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: var(--primary-blue);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .food-icon {
+      font-size: 1.3rem;
+    }
+
+    /* 경비 요약 & 테이블 스타일 */
+    .cost-summary {
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .cost-summary-title {
+      font-size: 1rem;
+      color: #1e40af;
+      font-weight: 600;
+    }
+
+    .cost-summary-amount {
+      font-size: 1.4rem;
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+
+    /* 테이블 스타일 */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: var(--primary-blue);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tr:hover {
+      background-color: #f1f5f9;
+    }
+
+    .day-badge {
+      display: inline-block;
+      background-color: #e0f2fe;
+      color: #0369a1;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    /* 푸터 스타일 */
+    footer {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--text-sub);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      background-color: #ffffff;
+      margin-top: 40px;
+    }
+
+    /* 모바일 대응 레이아웃 조절 */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+      .card {
+        padding: 16px;
+      }
+      .map-container {
+        height: 380px;
+      }
+      .food-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .nav-btn {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+      }
+      th, td {
+        padding: 10px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 영역 -->
+  <header>
+    <h1>딥블루 사천</h1>
+    <p>사천 여행을 위한 코스 안내 & 맞춤 지도 목록</p>
+  </header>
+
+  <!-- 상단 빠른 이동 버튼 메뉴 바 -->
+  <nav class="nav-bar">
+    <div class="nav-container">
+      <a href="#section-map" class="nav-btn">📍 여행지도</a>
+      <a href="#section-food" class="nav-btn">😋 먹거리리스트</a>
+      <a href="#section-cost" class="nav-btn">💰 지출내역</a>
+      <a href="#section-schedule" class="nav-btn">🗓 일정표</a>
+    </div>
+  </nav>
+
+  <!-- 메인 콘텐츠 영역 -->
+  <main>
+    
+    <!-- 지도 섹션 -->
+    <section id="section-map" class="card">
+      <h2 class="card-title">📍 여행 지도</h2>
+      <p class="card-desc">
+        공항, 숙소, 주요 명소 및 맛집 위치를 확인해보세요.<br>
+        지도를 확대/축소하거나 항목을 터치하여 상세 정보를 보실 수 있습니다.
+      </p>
+
+      <!-- 구글 내 지도 임베드 -->
+      <div class="map-container">
+        <iframe 
+          src="https://www.google.com/maps/d/embed?mid=1eVl2hAykG3LGHT8EbnFU-HtNUHFqRIY&ehbc=2E312F" 
+          allowfullscreen 
+          loading="lazy">
+        </iframe>
+      </div>
+
+      <!-- 지도 외부 링크 버튼 -->
+      <div class="btn-group">
+        <a href="https://www.google.com/maps/d/u/0/edit?mid=1eVl2hAykG3LGHT8EbnFU-HtNUHFqRIY&usp=sharing" 
+           target="_blank" 
+           class="btn">
+          Google Maps 앱/큰 화면으로 보기 ↗
+        </a>
+      </div>
+    </section>
+
+    <!-- 😋 먹어야 할 음식 섹션 -->
+    <section id="section-food" class="card">
+      <h2 class="card-title">😋 추천 먹거리 리스트</h2>
+      <p class="card-desc">이번 여행 중 꼭 맛봐야 할 추천 대표 음식 & 음료 목록입니다.</p>
+
+      <div class="food-grid">
+        <div class="food-card"><span class="food-icon">🍖</span> 슈바인 학센</div>
+        <div class="food-card"><span class="food-icon">🥩</span> 슈니첼</div>
+        <div class="food-card"><span class="food-icon">🌭</span> 소시지</div>
+        <div class="food-card"><span class="food-icon">🍷</span> 사과와인 (Apfelwein)</div>
+        <div class="food-card"><span class="food-icon">🍺</span> 맥주</div>
+        <div class="food-card"><span class="food-icon">🍲</span> 굴라쉬</div>
+        <div class="food-card"><span class="food-icon">🥨</span> 브레첼</div>
+        <div class="food-card"><span class="food-icon">🥔</span> 카토펠푸퍼 (감자전)</div>
+        <div class="food-card"><span class="food-icon">🍬</span> 하리보</div>
+      </div>
+    </section>
+
+    <!-- 💰 인당 개인 사비 지출 목록 섹션 -->
+    <section id="section-cost" class="card">
+      <h2 class="card-title">💰 인당 고정 경비 지출 내역</h2>
+      <p class="card-desc">사전에 지출된 1인 기준 기본 경비 목록입니다.</p>
+
+      <div class="cost-summary">
+        <span class="cost-summary-title">1인 총 기본 경비 합계</span>
+        <span class="cost-summary-amount">680,183원</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>내용</th>
+              <th class="text-right">금액 (1인 기준)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>항공료</strong></td>
+              <td>왕복/편도 왕복 항공권</td>
+              <td class="text-right">493,000원</td>
+            </tr>
+            <tr>
+              <td><strong>기차비</strong></td>
+              <td>도시 간 이동 철도 비용</td>
+              <td class="text-right">47,183원</td>
+            </tr>
+            <tr>
+              <td><strong>좌석 지정비</strong></td>
+              <td>비행기 좌석 지정 (프리미엄존)</td>
+              <td class="text-right">140,000원</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 1일차 ~ 10일차 일정표 섹션 -->
+    <section id="section-schedule" class="card">
+      <h2 class="card-title">🗓 10일간의 일정표</h2>
+      <p class="card-desc">1일차부터 10일차 상세 여행 계획입니다.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 15%;">일차 (날짜)</th>
+              <th style="width: 25%;">주요 이동 / 도시</th>
+              <th style="width: 45%;">세부 일정 & 방문지</th>
+              <th style="width: 15%;">비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="day-badge">1일차 (08.21)</span></td>
+              <td><strong>도착 & 호텔 체크인</strong></td>
+              <td>공항 도착 ➔ 호텔 이동 및 체크인</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">2일차 (08.22)</span></td>
+              <td><strong>프랑크푸르트 & 다름슈타트</strong></td>
+              <td>호텔 ➔ 뢰머광장 ➔ 프랑크푸르트 대성당 ➔ 유로타워 ➔ 프랑크푸르트 홈구장 ➔ 아이젤너 다리 ➔ 다름슈타트 공대 ➔ 마인타워 ➔ 클라인마르크트할레</td>
+              <td>관광루트/이동선</td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">3일차 (08.23)</span></td>
+              <td><strong>쾰른 탐방</strong></td>
+              <td>호텔 ➔ 프랑크푸르트 중앙역 ➔ 쾰른 대성당 ➔ 쾰른 시내 관람</td>
+              <td>이동선 확인</td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">4일차 (08.24)</span></td>
+              <td><strong>하이델베르크 투어</strong></td>
+              <td>호텔 ➔ 프랑크푸르트 중앙역 ➔ 하이델베르크 역 ➔ 하이델베르크 성</td>
+              <td>성 이동선</td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">5일차 (08.25)</span></td>
+              <td><strong>뉘른베르크 이동</strong></td>
+              <td>호텔 ➔ 프랑크푸르트 중앙역 ➔ 뉘른베르크 역 및 주변 탐방</td>
+              <td>이동선 확인</td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">6일차 (08.26)</span></td>
+              <td><strong>함부르크 & 코펜하겐</strong></td>
+              <td>호텔 ➔ 프랑크푸르트 중앙역 ➔ 함부르크 중앙역 ➔ 코펜하겐 중앙역</td>
+              <td>장거리 이동</td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">7일차</span></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">8일차</span></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">9일차</span></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><span class="day-badge">10일차</span></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 푸터 영역 -->
+  <footer>
+    <p>© 딥블루 사천 Trip Guide. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
